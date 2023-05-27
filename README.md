@@ -20,3 +20,7 @@ Using GitHub Copilot in :
 - [ ] Relative Temp. Statistics (current loc vs typed loc)
 - [ ] Funny Tip (ex:- precipitation chance high : o/p sky is about to cry :< Better grab your umbrella and some tissues )
 
+
+## Contribution : 
+Attach Screenshorts of CLI focusing on each improvment made, highliting / comparing changes in each PR. 
+
