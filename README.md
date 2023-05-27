@@ -20,7 +20,20 @@ Using GitHub Copilot in :
 - [ ] Relative Temp. Statistics (current loc vs typed loc)
 - [ ] Funny Tip (ex:- precipitation chance high : o/p sky is about to cry :< Better grab your umbrella and some tissues )
 
+## Usage
+
+### Installation
+1. Clone the repository.
+2. Install the required dependencies using `pip install -r requirements.txt`.
+
+### Running the Tool
+1. Open the terminal and navigate to the project directory.
+2. Run the command: `python demo.py <city> , replacing `<city>`, `<city2>`, etc., with the names of the cities for which you want to retrieve the weather forecast.
+3. The tool will fetch the weather data for each city and display the results.
+
 
 ## Contribution : 
 Attach Screenshorts of CLI focusing on each improvment made, highliting / comparing changes in each PR. 
+
+
 
