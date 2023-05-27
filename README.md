@@ -1,16 +1,16 @@
-# ms_gthub_copilot_hackathon
-
+# ms_gthub_copilot_hackathon  27th may/ 2nd June
+## To Show all features with help of copilot and other microsoft services.
 ### Objective : 
 - [ ] A command-line tool 
-` takes-> citys name -gives -> current weather forecast.  
+    - takes-> citys name -gives -> current weather forecast  
 Using GitHub Copilot in :  
 - [ ] API usage  
 - [ ] data parsing  
 - [ ] error handling
 
-
 ### TODOS
 - [ ] presentable CLI   
+- [ ] Query Error Handeling 
 - [ ] different weather segments ()
 
 ### Extras
@@ -20,11 +20,3 @@ Using GitHub Copilot in :
 - [ ] Relative Temp. Statistics (current loc vs typed loc)
 - [ ] Funny Tip (ex:- precipitation chance high : o/p sky is about to cry :< Better grab your umbrella and some tissues )
 
-
-
-
-## IMPO : To Show all this with help of copilot and other microsoft services.
-
-
-
- 
