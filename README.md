@@ -24,11 +24,11 @@ Using GitHub Copilot in :
 
 ### Installation
 1. Clone the repository.
-2. Install the required dependencies using `pip install -r requirements.txt`.
+2. Install the required dependencies using `pip install requests argparse`.
 
 ### Running the Tool
 1. Open the terminal and navigate to the project directory.
-2. Run the command: `python demo.py <city> , replacing `<city>`, `<city2>`, etc., with the names of the cities for which you want to retrieve the weather forecast.
+2. Run the command: `python demo.py <city1> <city2> ..` , replacing `<city>`, `<city2>`, etc., with the names of the cities for which you want to retrieve the weather forecast.
 3. The tool will fetch the weather data for each city and display the results.
 
 
