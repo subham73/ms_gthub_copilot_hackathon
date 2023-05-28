@@ -53,14 +53,14 @@ def main():
     parser.add_argument('cities', metavar='city', nargs='+',
                         help='City name(s) for weather forecast')
     args = parser.parse_args()
+    user_location_temp = get_result("Puri")['main']['temp']
 
     for city in args.cities:
         weather_data = get_result(city)
 
         if weather_data:
             display_weather(city, weather_data)
-
-            user_location_temp = get_result("Puri")['main']['temp']
+           
             temp_difference = calculate_temperature_difference(
                 user_location_temp, weather_data['main']['temp'])
             print(temp_difference)
@@ -69,7 +69,7 @@ def main():
                 weather_data['weather'][0]['description'])
             print(funny_tip)
         else:
-            print(f"Error fetching weather data for {city}.")
+            print()
 
 
 if __name__ == '__main__':
