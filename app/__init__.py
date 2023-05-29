@@ -7,13 +7,18 @@ __version__ = "0.1.0"
 # define a series of return assign integer numbers to them using range()
 (
     SUCCESS,
-    ERROR
-    
-
-) = range(2)
+    DIR_ERROR,
+    FILE_ERROR,
+    DB_READ_ERROR,
+    DB_WRITE_ERROR,
+    JSON_ERROR,
+    ID_ERROR,
+) = range(7)
 
 ERROR ={
-    "city_not_found": "City not found",
-    "no_weather_data": "No weather data available",
-    "no_funny_tip": "No funny tip available for this weather condition",
+    DIR_ERROR: "config directory error",
+    FILE_ERROR: "config file error",
+    DB_READ_ERROR: "database read error",
+    DB_WRITE_ERROR: "database write error",
+    ID_ERROR: "to-do id error",
 }

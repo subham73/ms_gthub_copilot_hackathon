@@ -24,6 +24,13 @@ def display_weather(city, data):
     temperature = data['main']['temp']
     print(f"Current temperature in {city}: {temperature}°C")
 
+# display_all_weather_information receive json data from openweathermap and display all information 
+def display_all_weather_information(data):
+    print(f"Current temperature in {data['name']}: {data['main']['temp']}°C")
+    print(f"Current weather description: {data['weather'][0]['description']}")
+    print(f"Current humidity: {data['main']['humidity']}%")
+    print(f"Current wind speed: {data['wind']['speed']} km/h")
+
 
 def generate_funny_tip(condition):
     if "rain" in condition.lower():
@@ -59,18 +66,20 @@ def main():
         weather_data = get_result(city)
 
         if weather_data:
-            display_weather(city, weather_data)
+            print(weather_data)
+        # if weather_data:
+        #     display_weather(city, weather_data)
            
-            temp_difference = calculate_temperature_difference(
-                user_location_temp, weather_data['main']['temp'])
-            print(temp_difference)
+        #     temp_difference = calculate_temperature_difference(
+        #         user_location_temp, weather_data['main']['temp'])
+        #     print(temp_difference)
 
-            funny_tip = generate_funny_tip(
-                weather_data['weather'][0]['description'])
-            print(funny_tip)
-        else:
-            print()
-
+        #     funny_tip = generate_funny_tip(
+        #         weather_data['weather'][0]['description'])
+        #     print(funny_tip)
+        # else:
+        #     print(f"Error fetching weather data for {city}.")
+        # print()
 
 if __name__ == '__main__':
     main()
