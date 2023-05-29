@@ -1,5 +1,8 @@
 import requests
 import argparse
+from datetime import datetime
+import math
+
 
 API_KEY = "bb98bf2f8428ad68257a92b595bfd52e"
 
@@ -9,20 +12,104 @@ def get_result(city):
 
     url = f"https://api.openweathermap.org/data/2.5/weather?q={CITY}&appid={API_KEY}&units=metric"
 
-    response = requests.get(url)
-
-    if response.status_code == 200:
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
         data = response.json()
-        # print(f"Current temperature in {CITY}: {data['main']['temp']}°C")
         return data
-    else:
-        # print("Error fetching weather data")
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching weather data for {city}: {e}")
         return None
+    except ValueError as e:
+        print(f"Error parsing weather data for {city}: {e}")
+        return None
+
+
+def calculate_dew_point(temperature, humidity):
+    # formula to calculate dew point
+    a = 17.27
+    b = 237.7
+    c = ((a * temperature) / (b + temperature)) + \
+        math.log(humidity / 100.0)
+    dew_point = (b * c) / (a - c)
+    return dew_point
 
 
 def display_weather(city, data):
     temperature = data['main']['temp']
+    min_temp = data['main']['temp_min']
+    max_temp = data['main']['temp_max']
+    # temperatures = []
+    # temperatures.append(temperature)
+    # min_temp = min(item['main']['temp'] for item in data['list'])
+    # max_temp = max(item['main']['temp'] for item in data['list'])
+    humidity = data['main']['humidity']
+    pressure = data['main']['pressure']
+    visibility = data['visibility']
+    wind_speed = data['wind']['speed']
+    uv_index = data.get('uvi', 'N/A')
+
+    dew_point = calculate_dew_point(temperature, humidity)
+
     print(f"Current temperature in {city}: {temperature}°C")
+    print(f"Minimum temperature of the day: {min_temp}°C")
+    print(f"Maximum temperature of the day: {max_temp}°C")
+
+    # print(f"Minimum temperature of the day: {min(temperatures)}°C")
+    # print(f"Maximum temperature of the day: {max(temperatures)}°C")
+    print(f"Humidity: {humidity}%")
+    print(f"Pressure: {pressure} hPa")
+    print(f"Dew Point: {dew_point}°C")
+    print(f"Visibility: {visibility} meters")
+    print(f"Wind Speed: {wind_speed} m/s")
+    print(f"UV Index: {uv_index}")
+
+    temp_thresholds = {'lower': 10, 'upper': 30}
+    humidity_thresholds = {'lower': 30, 'upper': 70}
+    wind_speed_thresholds = {'lower': 5, 'upper': 15}
+
+    temp_comments = {
+        'lower': "It's a bit chilly today.",
+        'in_range': "The temperature is pleasant.",
+        'upper': "It's quite hot today."
+    }
+    humidity_comments = {
+        'lower': "Humidity is low, enjoy the dry air.",
+        'in_range': "Humidity is at a comfortable level.",
+        'upper': "It's quite humid today."
+    }
+    wind_speed_comments = {
+        'lower': "The wind is calm today.",
+        'in_range': "Moderate wind speed.",
+        'upper': "It's windy today."
+    }
+
+    temp_description = ""
+    if temperature < temp_thresholds['lower']:
+        temp_description = temp_comments['lower']
+    elif temperature > temp_thresholds['upper']:
+        temp_description = temp_comments['upper']
+    else:
+        temp_description = temp_comments['in_range']
+
+    humidity_description = ""
+    if humidity < humidity_thresholds['lower']:
+        humidity_description = humidity_comments['lower']
+    elif humidity > humidity_thresholds['upper']:
+        humidity_description = humidity_comments['upper']
+    else:
+        humidity_description = humidity_comments['in_range']
+
+    wind_speed_description = ""
+    if wind_speed < wind_speed_thresholds['lower']:
+        wind_speed_description = wind_speed_comments['lower']
+    elif wind_speed > wind_speed_thresholds['upper']:
+        wind_speed_description = wind_speed_comments['upper']
+    else:
+        wind_speed_description = wind_speed_comments['in_range']
+
+    print(
+        f"Weather Description: {temp_description}, {humidity_description}, {wind_speed_description}")
 
 
 def generate_funny_tip(condition):
@@ -39,6 +126,18 @@ def generate_funny_tip(condition):
 def calculate_temperature_difference(user_temp, typed_temp):
     diff = user_temp - typed_temp
     return f"Temperature difference: {abs(diff)}°C {'higher' if diff > 0 else 'lower'} than your location."
+
+
+def calculate_time_remaining(sunset_time):
+    now = datetime.now()
+    time_remaining = sunset_time - now
+    return f"Time remaining until sunset: {time_remaining}"
+
+
+def calculate_time_after_sunrise(sunrise_time):
+    now = datetime.now()
+    time_after_sunrise = now - sunrise_time
+    return f"Time after sunrise: {time_after_sunrise}"
 
 
 def main():
@@ -60,7 +159,7 @@ def main():
 
         if weather_data:
             display_weather(city, weather_data)
-           
+
             temp_difference = calculate_temperature_difference(
                 user_location_temp, weather_data['main']['temp'])
             print(temp_difference)
@@ -68,6 +167,14 @@ def main():
             funny_tip = generate_funny_tip(
                 weather_data['weather'][0]['description'])
             print(funny_tip)
+
+            sunset_time = datetime.fromtimestamp(weather_data['sys']['sunset'])
+            print(calculate_time_remaining(sunset_time))
+
+            sunrise_time = datetime.fromtimestamp(
+                weather_data['sys']['sunrise'])
+            print(calculate_time_after_sunrise(sunrise_time))
+
         else:
             print()
 
