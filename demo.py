@@ -176,7 +176,7 @@ def main():
             print(calculate_time_after_sunrise(sunrise_time))
 
         else:
-            print()
+            print(f"Error fetching weather data for {city}.")
 
 
 if __name__ == '__main__':
