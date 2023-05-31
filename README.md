@@ -24,7 +24,7 @@ Using GitHub Copilot in :
 
 ### Installation
 1. Clone the repository.
-2. Install the required dependencies using `pip install requests argparse`.
+2. Install the required dependencies using `pip install requests argparse datetime math`.
 
 ### Running the Tool
 1. Open the terminal and navigate to the project directory.
