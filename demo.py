@@ -159,7 +159,6 @@ def main():
 
         if weather_data:
             display_weather(city, weather_data)
-
             temp_difference = calculate_temperature_difference(
                 user_location_temp, weather_data['main']['temp'])
             print(temp_difference)
