@@ -35,6 +35,27 @@ def calculate_dew_point(temperature, humidity):
     return dew_point
 
 
+def calculate_feels_like_temperature(temperature, humidity, wind_speed):
+    # formula to calculate feels like temperature
+    c1 = -8.78469475556
+    c2 = 1.61139411
+    c3 = 2.33854883889
+    c4 = -0.14611605
+    c5 = -0.012308094
+    c6 = -0.0164248277778
+    c7 = 0.002211732
+    c8 = 0.00072546
+    c9 = -0.000003582
+    feels_like = c1 + c2 * temperature + c3 * humidity + c4 * temperature * humidity + c5 * temperature**2 + c6 * \
+        humidity**2 + c7 * temperature**2 * humidity + c8 * \
+        temperature * humidity**2 + c9 * temperature**2 * humidity**2
+
+    if wind_speed > 4.8:
+        feels_like -= ((wind_speed - 4.8) / 10)
+
+    return feels_like
+
+
 def display_weather(city, data):
     temperature = data['main']['temp']
     min_temp = data['main']['temp_min']
@@ -50,8 +71,11 @@ def display_weather(city, data):
     uv_index = data.get('uvi', 'N/A')
 
     dew_point = calculate_dew_point(temperature, humidity)
+    feels_like = calculate_feels_like_temperature(
+        temperature, humidity, wind_speed)
 
     print(f"Current temperature in {city}: {temperature}°C")
+    print(f"Feels Like: {feels_like}°C")
     print(f"Minimum temperature of the day: {min_temp}°C")
     print(f"Maximum temperature of the day: {max_temp}°C")
 
