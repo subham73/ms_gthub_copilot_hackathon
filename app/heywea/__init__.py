@@ -1,10 +1,8 @@
-"""Top-level package for """
+"""Top-level package for RP To-Do."""
 
-# create skeleton for a cli appication FOR weather app
-__app_name__ = "Weather App"
+__app_name__ = "heywea"
 __version__ = "0.1.0"
 
-# define a series of return assign integer numbers to them using range()
 (
     SUCCESS,
     DIR_ERROR,
@@ -15,7 +13,7 @@ __version__ = "0.1.0"
     ID_ERROR,
 ) = range(7)
 
-ERROR ={
+ERRORS = {
     DIR_ERROR: "config directory error",
     FILE_ERROR: "config file error",
     DB_READ_ERROR: "database read error",
