@@ -164,6 +164,54 @@ def calculate_time_after_sunrise(sunrise_time):
     return f"Time after sunrise: {time_after_sunrise}"
 
 
+def get_forecast(city):
+    CITY = city
+
+    url = f"https://api.openweathermap.org/data/2.5/forecast?q={CITY}&appid={API_KEY}&units=metric"
+
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        data = response.json()
+        return data
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching forecast data for {city}: {e}")
+        return None
+    except ValueError as e:
+        print(f"Error parsing forecast data for {city}: {e}")
+        return None
+
+
+def display_forecast(city, forecast_data):
+    dates = set()
+    forecast_data_per_date = {}
+
+    for forecast in forecast_data['list']:
+        date = datetime.fromtimestamp(forecast['dt']).date()
+        dates.add(date)
+
+        if date in forecast_data_per_date:
+            forecast_data_per_date[date]['temperatures'].append(
+                forecast['main']['temp'])
+        else:
+            forecast_data_per_date[date] = {
+                'temperatures': [forecast['main']['temp']],
+                'weather_descriptions': [forecast['weather'][0]['description']]
+            }
+    sorted_dates = sorted(dates)
+
+    for date in sorted_dates:
+        data = forecast_data_per_date[date]
+        average_temperature = sum(
+            data['temperatures']) / len(data['temperatures'])
+        weather_description = data['weather_descriptions'][0]
+
+        print("Date:", date)
+        print("Average Temperature:", round(average_temperature, 2), "°C")
+        print("Weather Description:", weather_description)
+        print()
+
+
 def main():
     # get_result("delhi")
     #     parser = argparse.ArgumentParser(description='Get the current weather for a city')
@@ -175,31 +223,44 @@ def main():
         description='Get the current weather for a city')
     parser.add_argument('cities', metavar='city', nargs='+',
                         help='City name(s) for weather forecast')
+    parser.add_argument('-f', '--forecast', action='store_true',
+                        help='Display weather forecast for multiple days')
+
     args = parser.parse_args()
+    cities = args.cities
     user_location_temp = get_result("Puri")['main']['temp']
 
-    for city in args.cities:
-        weather_data = get_result(city)
+    if args.forecast:
+        for city in cities:
+            forecast_data = get_forecast(city)
+            if forecast_data:
+                print("Weather forecast for", city + ":")
+                display_forecast(city, forecast_data)
+                print()
+    else:
+        for city in cities:
+            weather_data = get_result(city)
 
-        if weather_data:
-            display_weather(city, weather_data)
-            temp_difference = calculate_temperature_difference(
-                user_location_temp, weather_data['main']['temp'])
-            print(temp_difference)
+            if weather_data:
+                display_weather(city, weather_data)
+                temp_difference = calculate_temperature_difference(
+                    user_location_temp, weather_data['main']['temp'])
+                print(temp_difference)
 
-            funny_tip = generate_funny_tip(
-                weather_data['weather'][0]['description'])
-            print(funny_tip)
+                funny_tip = generate_funny_tip(
+                    weather_data['weather'][0]['description'])
+                print(funny_tip)
 
-            sunset_time = datetime.fromtimestamp(weather_data['sys']['sunset'])
-            print(calculate_time_remaining(sunset_time))
+                sunset_time = datetime.fromtimestamp(
+                    weather_data['sys']['sunset'])
+                print(calculate_time_remaining(sunset_time))
 
-            sunrise_time = datetime.fromtimestamp(
-                weather_data['sys']['sunrise'])
-            print(calculate_time_after_sunrise(sunrise_time))
+                sunrise_time = datetime.fromtimestamp(
+                    weather_data['sys']['sunrise'])
+                print(calculate_time_after_sunrise(sunrise_time))
 
-        else:
-            print()
+            else:
+                print()
 
 
 if __name__ == '__main__':
