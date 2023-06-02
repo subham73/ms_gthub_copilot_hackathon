@@ -56,6 +56,7 @@ def calculate_feels_like_temperature(temperature, humidity, wind_speed):
     return feels_like
 
 
+
 def display_weather(city, data):
     temperature = data['main']['temp']
     min_temp = data['main']['temp_min']
