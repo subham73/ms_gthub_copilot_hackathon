@@ -2,7 +2,12 @@ import requests
 import argparse
 from datetime import datetime
 import math
-
+# from tabulate import tabulate
+from rich import print
+from rich.table import Table
+from rich.console import Console
+from rich.text import Text
+import emoji
 
 API_KEY = "bb98bf2f8428ad68257a92b595bfd52e"
 
@@ -18,10 +23,10 @@ def get_result(city):
         data = response.json()
         return data
     except requests.exceptions.RequestException as e:
-        print(f"Error fetching weather data for {city}: {e}")
+        print(f"[bold red]Error fetching weather data for {city}: {e}[/bold red]")
         return None
     except ValueError as e:
-        print(f"Error parsing weather data for {city}: {e}")
+        print(f"[bold red]Error parsing weather data for {city}: {e}[/bold red]")
         return None
 
 
@@ -35,115 +40,70 @@ def calculate_dew_point(temperature, humidity):
     return dew_point
 
 
-def calculate_feels_like_temperature(temperature, humidity, wind_speed):
-    # formula to calculate feels like temperature
-    c1 = -8.78469475556
-    c2 = 1.61139411
-    c3 = 2.33854883889
-    c4 = -0.14611605
-    c5 = -0.012308094
-    c6 = -0.0164248277778
-    c7 = 0.002211732
-    c8 = 0.00072546
-    c9 = -0.000003582
-    feels_like = c1 + c2 * temperature + c3 * humidity + c4 * temperature * humidity + c5 * temperature**2 + c6 * \
-        humidity**2 + c7 * temperature**2 * humidity + c8 * \
-        temperature * humidity**2 + c9 * temperature**2 * humidity**2
-
-    if wind_speed > 4.8:
-        feels_like -= ((wind_speed - 4.8) / 10)
-
+def calculate_feels_like_temperature(temperature, wind_speed):
+    # Formula to calculate feels like temperature (wind chill)
+    feels_like = 13.12 + 0.6215 * temperature - 11.37 * wind_speed**0.16 + 0.3965 * temperature * wind_speed**0.16
     return feels_like
 
 
 
-def display_weather(city, data):
+def display_basic_weather(city, data):
     temperature = data['main']['temp']
+    humidity = data['main']['humidity']
+    real_feel = calculate_feels_like_temperature(
+        temperature, data['wind']['speed'])
+
+    table = Table(show_header=True, header_style="bold magenta")
+    table.add_column("Location", style="dim")
+    table.add_column("Temperature (°C)", style="bold")
+    table.add_column("Humidity (%)", style="bold")
+    table.add_column("Real Feel (°C)", style="bold")
+
+    table.add_row(city, f"{temperature}°C", f"{humidity}%", f"{real_feel}°C")
+
+    console = Console()
+    console.print(f"Weather Information for {city}:", style="bold cyan")
+    console.print(table)
+    console.print()
+
+
+def display_additional_weather(data):
     min_temp = data['main']['temp_min']
     max_temp = data['main']['temp_max']
-    # temperatures = []
-    # temperatures.append(temperature)
-    # min_temp = min(item['main']['temp'] for item in data['list'])
-    # max_temp = max(item['main']['temp'] for item in data['list'])
-    humidity = data['main']['humidity']
     pressure = data['main']['pressure']
     visibility = data['visibility']
     wind_speed = data['wind']['speed']
     uv_index = data.get('uvi', 'N/A')
+    sunrise_time = datetime.fromtimestamp(data['sys']['sunrise']).strftime('%H:%M:%S')
+    sunset_time = datetime.fromtimestamp(data['sys']['sunset']).strftime('%H:%M:%S')
+    dew_point = calculate_dew_point(data['main']['temp'], data['main']['humidity'])
 
-    dew_point = calculate_dew_point(temperature, humidity)
-    feels_like = calculate_feels_like_temperature(
-        temperature, humidity, wind_speed)
+    table = Table(show_header=True, header_style="bold magenta")
+    table.add_column("Parameter", style="dim")
+    table.add_column("Value", style="bold")
 
-    print(f"Current temperature in {city}: {temperature}°C")
-    print(f"Feels Like: {feels_like}°C")
-    print(f"Minimum temperature of the day: {min_temp}°C")
-    print(f"Maximum temperature of the day: {max_temp}°C")
+    table.add_row("Minimum Temperature", f"{min_temp}°C")
+    table.add_row("Maximum Temperature", f"{max_temp}°C")
+    table.add_row("Pressure", f"{pressure} hPa")
+    table.add_row("Dew Point", f"{dew_point}°C")
+    table.add_row("Visibility", f"{visibility} meters")
+    table.add_row("Wind Speed", f"{wind_speed} m/s")
+    table.add_row("UV Index", f"{uv_index}")
+    table.add_row("Sunrise Time", sunrise_time)
+    table.add_row("Sunset Time", sunset_time)
 
-    # print(f"Minimum temperature of the day: {min(temperatures)}°C")
-    # print(f"Maximum temperature of the day: {max(temperatures)}°C")
-    print(f"Humidity: {humidity}%")
-    print(f"Pressure: {pressure} hPa")
-    print(f"Dew Point: {dew_point}°C")
-    print(f"Visibility: {visibility} meters")
-    print(f"Wind Speed: {wind_speed} m/s")
-    print(f"UV Index: {uv_index}")
-
-    temp_thresholds = {'lower': 10, 'upper': 30}
-    humidity_thresholds = {'lower': 30, 'upper': 70}
-    wind_speed_thresholds = {'lower': 5, 'upper': 15}
-
-    temp_comments = {
-        'lower': "It's a bit chilly today.",
-        'in_range': "The temperature is pleasant.",
-        'upper': "It's quite hot today."
-    }
-    humidity_comments = {
-        'lower': "Humidity is low, enjoy the dry air.",
-        'in_range': "Humidity is at a comfortable level.",
-        'upper': "It's quite humid today."
-    }
-    wind_speed_comments = {
-        'lower': "The wind is calm today.",
-        'in_range': "Moderate wind speed.",
-        'upper': "It's windy today."
-    }
-
-    temp_description = ""
-    if temperature < temp_thresholds['lower']:
-        temp_description = temp_comments['lower']
-    elif temperature > temp_thresholds['upper']:
-        temp_description = temp_comments['upper']
-    else:
-        temp_description = temp_comments['in_range']
-
-    humidity_description = ""
-    if humidity < humidity_thresholds['lower']:
-        humidity_description = humidity_comments['lower']
-    elif humidity > humidity_thresholds['upper']:
-        humidity_description = humidity_comments['upper']
-    else:
-        humidity_description = humidity_comments['in_range']
-
-    wind_speed_description = ""
-    if wind_speed < wind_speed_thresholds['lower']:
-        wind_speed_description = wind_speed_comments['lower']
-    elif wind_speed > wind_speed_thresholds['upper']:
-        wind_speed_description = wind_speed_comments['upper']
-    else:
-        wind_speed_description = wind_speed_comments['in_range']
-
-    print(
-        f"Weather Description: {temp_description}, {humidity_description}, {wind_speed_description}")
+    console = Console()
+    console.print(table)
+    console.print()
 
 
 def generate_funny_tip(condition):
     if "rain" in condition.lower():
-        return "The sky is about to cry. Better grab your umbrella and some tissues!"
+        return emoji.emojize("The sky is about to cry. Better grab your umbrella and some tissues! :umbrella_with_rain_drops:")
     elif "cloud" in condition.lower():
-        return "Cloudy skies ahead. Don't forget your jacket!"
+        return emoji.emojize("Cloudy skies ahead. Don't forget your jacket! :cloud:")
     elif "sunny" in condition.lower():
-        return "It's sunny outside. Don't forget your sunscreen!"
+        return emoji.emojize("It's sunny outside. Don't forget your sunscreen! :sun_with_face:")
     else:
         return "No funny tip available for this weather condition."
 
@@ -165,61 +125,7 @@ def calculate_time_after_sunrise(sunrise_time):
     return f"Time after sunrise: {time_after_sunrise}"
 
 
-def get_forecast(city):
-    CITY = city
-
-    url = f"https://api.openweathermap.org/data/2.5/forecast?q={CITY}&appid={API_KEY}&units=metric"
-
-    try:
-        response = requests.get(url)
-        response.raise_for_status()
-        data = response.json()
-        return data
-    except requests.exceptions.RequestException as e:
-        print(f"Error fetching forecast data for {city}: {e}")
-        return None
-    except ValueError as e:
-        print(f"Error parsing forecast data for {city}: {e}")
-        return None
-
-
-def display_forecast(city, forecast_data):
-    dates = set()
-    forecast_data_per_date = {}
-
-    for forecast in forecast_data['list']:
-        date = datetime.fromtimestamp(forecast['dt']).date()
-        dates.add(date)
-
-        if date in forecast_data_per_date:
-            forecast_data_per_date[date]['temperatures'].append(
-                forecast['main']['temp'])
-        else:
-            forecast_data_per_date[date] = {
-                'temperatures': [forecast['main']['temp']],
-                'weather_descriptions': [forecast['weather'][0]['description']]
-            }
-    sorted_dates = sorted(dates)
-
-    for date in sorted_dates:
-        data = forecast_data_per_date[date]
-        average_temperature = sum(
-            data['temperatures']) / len(data['temperatures'])
-        weather_description = data['weather_descriptions'][0]
-
-        print("Date:", date)
-        print("Average Temperature:", round(average_temperature, 2), "°C")
-        print("Weather Description:", weather_description)
-        print()
-
-
 def main():
-    # get_result("delhi")
-    #     parser = argparse.ArgumentParser(description='Get the current weather for a city')
-    #     parser.add_argument('city', type=str, help='the name of the city')
-    #     args = parser.parse_args ()
-
-    #    get_result(city)
     parser = argparse.ArgumentParser(
         description='Get the current weather for a city')
     parser.add_argument('cities', metavar='city', nargs='+',
@@ -243,7 +149,9 @@ def main():
             weather_data = get_result(city)
 
             if weather_data:
-                display_weather(city, weather_data)
+                display_basic_weather(city, weather_data)
+                display_additional_weather(weather_data)
+
                 temp_difference = calculate_temperature_difference(
                     user_location_temp, weather_data['main']['temp'])
                 print(temp_difference)
@@ -266,3 +174,6 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+
